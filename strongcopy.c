@@ -62,6 +62,12 @@ char *strdup(const char *str)
 #include "swis.h"
 #endif
 
+#ifdef __riscos
+typedef long int32_t;
+#else
+#include <stdint.h>
+#endif
+
 #ifdef SCL
 #define DIRSEP "."
 #else
@@ -70,38 +76,38 @@ char *strdup(const char *str)
 
 struct header {
         char magic[4];
-        int rootblocksize;
-        int stronghelpversion;
-        int freeblock_offset;
-        int rootdir_offset;
-        int loadaddress;
-        int execaddress;
-        int size;
-        int flags;
-        int reserved;
+        int32_t rootblocksize;
+        int32_t stronghelpversion;
+        int32_t freeblock_offset;
+        int32_t rootdir_offset;
+        int32_t loadaddress;
+        int32_t execaddress;
+        int32_t size;
+        int32_t flags;
+        int32_t reserved;
         char name[1];
         char pad[3];
 };
 
 struct directory_block {
         char magic[4];
-        int size; /* Size of directory block */
-        int used; /* Amount within directory block that is actually used */
+        int32_t size; /* Size of directory block */
+        int32_t used; /* Amount within directory block that is actually used */
 };
 
 struct directory_entry {
-        int object_offset;
-        int loadaddress;
-        int execaddress;
-        int length;
-        int flags;
-        int reserved;
+        int32_t object_offset;
+        int32_t loadaddress;
+        int32_t execaddress;
+        int32_t length;
+        int32_t flags;
+        int32_t reserved;
         /* char name[] */
 };
 
 struct data_block {
         char magic[4];
-        int size;
+        int32_t size;
         /* char data[] */
 };
 
