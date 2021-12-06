@@ -34,7 +34,7 @@ if ($old_abstracts)
   "Title" => "RFCs manual",
   "Description" => "This manual intends to provide a summary and quick reference for the Internet Request For Comments documents. " .
                    "It is not complete, nor (as with anything on the internet) can it ever be.",
-  "Author" => "Justin Fletcher",
+  "Author" => "Charles Ferguson",
   "Email" => "gerph\@gerph.org",
 
   # Any entry with the form '#.## (## ### ####)' is a history entry
