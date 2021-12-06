@@ -14,148 +14,171 @@
 #  updated   (comma separated list of RFC numbers)
 #  also      (comma separated list of RFC numbers)
 
+use File::Slurp;
+
+use warnings;
+
+my $rfcstore = "rfcs";
+
+sub rfcfile
+{
+    my ($num) = @_;
+    $num =~ s/RFC//;
+    $num =~ s/^0+//;
+    $num += 0;
+    my $group = int($num / 100);
+    my $dir   = "$rfcstore/rfcs${group}00";
+    my $leaf  = sprintf "RFC%04d.txt", $num;
+    return "$dir/$leaf";
+}
+
 sub rfcindex_read
 {
+    my $filename = "$rfcstore/rfc-index-simple.xml";
 
-  $rfc_specialtitle{49}=1;
-  $rfc_specialtitle{270}=1;
-  $rfc_specialtitle{1790}=1;
-  $rfc_specialtitle{2429}=1;
-  $rfc_specialtitle{2657}=1;
-  
-  open(INDEX, "rfcs/rfc-index.txt") || die;
-  
-  $sofar="";
-  while (<INDEX>)
-  {
-    chomp;
-    if ($_ eq "")
+    my $text    = read_file($filename);
+    my @entries = ($text =~ m!<rfc-entry>(.*?)</rfc-entry>!gsm);
+    for my $entry (@entries)
     {
-      # blank line means end of this entry
-      if (defined($num))
-      {
-        $sofar=~ s/  +/ /g;
-        &rfcindex_entry($num,$sofar);
-        $num=undef;
-      }
+        &rfcindex_entry($entry);
     }
-    elsif (/^([0-9]{4}) /)
+}
+
+sub rfcindex_extract_refs
+{
+    my ($entry, $refname) = @_;
+    my @list;
+    my @refs = ($entry =~ m!<$refname>(.*?)</$refname>!msg);
+    for my $inner (@refs)
     {
-      $num=$1+0;
-      $sofar=$';
+        my @docs = ($inner =~ m!<doc-id>(.*?)</doc-id>!g);
+        push @list, @docs;
+    }
+    if (scalar(@list))
+    {
+        return join ", ", @list;
     }
     else
     {
-      $sofar.=$_;
+        return undef;
     }
-  }
-  close(INDEX);
 }
 
 sub rfcindex_entry
 {
-  local ($num, $_)=@_;
-  if (/Not online/i | /Not issued/i)
-  {
-    return;
-  }
-  if (s/\(Format: (..*)=(.*) bytes\)//)
-  {
-    $format=$1;
-    $len=$2;
-    if (s/\(Status: ([^)]*)\)//)
-    {
-      $status = $1;
-      
-      # Read the relationships
-      $obsoletes = undef;
-      $obsoleted = undef;
-      if (s/\(Obsoletes ([^)]*)\)//)
-      {
-        $obsoletes=$1;
-      }
-      if (s/\(Obsoleted by ([^)]*)\)//)
-      {
-        $obsoleted=$1;
-      }
-      $updates = undef;
-      $updated = undef;
-      if (s/\(Updates ([^)]*)\)//)
-      {
-        $updates=$1;
-      }
-      if (s/\(Updated by ([^)]*)\)//)
-      {
-        $updated=$1;
-      }
-      $also = undef;
-      if (s/\(Also ([^)]*)\)//)
-      {
-        $also=$1;
-      }
-      
-      # Strip the trailing spaces
-      s/ +$//;
+    # Parse an entry. They look like this :
+    #        <doc-id>RFC7075</doc-id>
+    #        <title>Realm-Based Redirection In Diameter</title>
+    #        <author>
+    #            <name>T. Tsou</name>
+    #        </author>
+    #        <author>
+    #            <name>R. Hao</name>
+    #        </author>
+    #        <author>
+    #            <name>T. Taylor</name>
+    #            <title>Editor</title>
+    #        </author>
+    #        <date>
+    #            <month>November</month>
+    #            <year>2013</year>
+    #        </date>
+    #        <format>
+    #            <file-format>ASCII</file-format>
+    #            <file-format>HTML</file-format>
+    #        </format>
+    #        <page-count>10</page-count>
+    #        <keywords>
+    #            <kw>Diameter</kw>
+    #            <kw>routing</kw>
+    #        </keywords>
+    #        <abstract>HTML-like-text</abstract>
+    #        <draft>draft-ietf-dime-realm-based-redirect-13</draft>
+    #        <obsoletes>
+    #            <doc-id>RFC2271</doc-id>
+    #        </obsoletes>
+    #        <obsoleted-by>
+    #            <doc-id>RFC3410</doc-id>
+    #        </obsoleted-by>
+    #        <updates>
+    #            <doc-id>RFC6733</doc-id>
+    #        </updates>
+    #        <current-status>PROPOSED STANDARD</current-status>
+    #        <publication-status>PROPOSED STANDARD</publication-status>
+    #        <stream>IETF</stream>
+    #        <area>ops</area>
+    #        <wg_acronym>dime</wg_acronym>
+    #        <doi>10.17487/RFC7075</doi>
 
-      # Now see if we can get a date out
-      if (s/\. ([0-9]*) ?([A-Z][a-z][a-z])[a-z]* ([12][09][0-9][0-9])\.$/./)
-      {
-        if ($1 eq "")
-        {
-          $date = "$2 $3";
-        }
-        else
-        {
-          $date = "$1 $2 $3";
-        }
-      }
-      elsif (s/\. ([A-Z][a-z][a-z])[a-z]*-([0-9][0-9])-([12][09][0-9][0-9])\.$/./)
-      {
-        $date="$2 $1 $3";
-      }
-      
-      # Strip off the authors from the end
-      $authors=undef;
-      if ($rfc_specialtitle{$num})
-      {
-        if (s/^(.*?\..*?)\. +(.*)$/$1/)
-        {
-          $authors = $2;
-        }
-      }
-      elsif (s/^(.*?)\. +(.*)$/$1/)
-      {
-        $authors = $2;
-      }
-      if (!defined($authors))
-      {
-        # There are some RFCs that are just awkward in their use of
-        # periods in their titles.
-        print "Don't understand (authors): $num\n$_\n";
-      }
-      
-      $rfc_format{$num} = $format;
-      $rfc_length{$num} = $len;
-      $rfc_status{$num} = $status;
-      $rfc_obsoletes{$num} = $obsoletes;
-      $rfc_obsoleted{$num} = $obsoleted;
-      $rfc_updates{$num} = $updates;
-      $rfc_updated{$num} = $updated;
-      $rfc_also{$num} = $updated;
-      $rfc_date{$num} = $date;
-      $rfc_authors{$num} = $authors;
-      $rfc_title{$num} = $_;
-      # print "$num\t$date\n";
+    local ($entry) = @_;
+
+    my ($num) = ($entry =~ /<doc-id>RFC(\d+)/);
+    $num = 0 + $num;
+
+    $file   = rfcfile($num);
+    $format = 'TXT';
+    $len    = -s $file // 'unknown';
+
+    $status = 'UNKNOWN';
+    if ($entry =~ m!<current-status>(.*?)</current-status>!) { $status = $1; }
+
+    $obsoletes = rfcindex_extract_refs($entry, 'obsoletes');
+    $obsoleted = rfcindex_extract_refs($entry, 'obsoleted-by');
+    $updates = rfcindex_extract_refs($entry, 'updates');
+    $updated = rfcindex_extract_refs($entry, 'updated-by');
+    $also = rfcindex_extract_refs($entry, 'is-also');
+
+    my $day = undef;
+    if ($entry =~ m!<day>(.*?)</day>!) { $day = $1; }
+
+    my $month = undef;
+    if ($entry =~ m!<month>(.*?)</month>!) { $month = $1; }
+
+    my $year = undef;
+    if ($entry =~ m!<year>(.*?)</year>!) { $year = $1; }
+
+    if (defined $day)
+    {
+        $date = "$day $month $year";
     }
     else
     {
-      print "Don't understand (status): $num\n$_\n";
+        $date = "$month $year";
     }
-  }
-  else
-  {
-    print "Don't understand (format): $num\n$_\n";
-  }
+
+    $authors = "";
+    while ($entry =~ s/<author>\s*<name>(.*?)</name>/)
+    {
+        $authors .= $1 . " ";
+    }
+    $authors =~ s/ $//;
+
+    $title = "RFC $num";
+    if ($entry =~ m!<title>(.*?)</title>!) { $title = $1; }
+
+    $abstract = undef;
+    if ($entry =~ m!<abstract>(.*?)</abstract>!m)
+    {
+        $abstract = $1;
+        $abstract =~ s/(<p>|<\/p>)/\n/g;
+        $abstract =~ s/^\n//g;
+        $abstract =~ s/\n$//g;
+    }
+
+    $rfc_format{$num}    = $format;
+    $rfc_length{$num}    = $len;
+    $rfc_status{$num}    = $status;
+    $rfc_obsoletes{$num} = $obsoletes;
+    $rfc_obsoleted{$num} = $obsoleted;
+    $rfc_updates{$num}   = $updates;
+    $rfc_updated{$num}   = $updated;
+    $rfc_also{$num}      = $also;
+    $rfc_date{$num}      = $date;
+    $rfc_authors{$num}   = $authors;
+    $rfc_title{$num}     = $title;
+    $rfc_abstract{$num}  = $abstract;
+
+    #print "$num\t$date\t$title\n";
 }
 
 1;

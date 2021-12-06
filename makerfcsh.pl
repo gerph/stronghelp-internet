@@ -3,13 +3,18 @@
 # Construct the core StrongHelp pages about each RFC from the information
 # read from files and the index
 
-$datatype=",ffd"; # type to make it come out as data on RISC OS
+$datatype=",ffd"; # type to make it come out as data on RISC OS when generated on unix systems
+
+push @INC, '.';
 
 mkdir "sh", 0755;
 mkdir "sh/RFC", 0755;
 
+# Whether we use the old abstract extraction code which reads out of the text files.
+$old_abstracts = 0;
+
 # $lowest = 600; $highest = 1500;
-$lowest = 1; $highest = 4500;
+$lowest = 1; $highest = 10000;
 # $lowest = 300; $highest = 400;
 
 require "rfcindex.pl";
@@ -18,7 +23,10 @@ require "groups.pl";
 require "about.pl";
 &init_groups();
 &rfcindex_read();
-&rfcabstracts_read($lowest,$highest);
+if ($old_abstracts)
+{
+    &rfcabstracts_read($lowest,$highest);
+}
 
 
 # Set up the 'about' information for this manual
@@ -43,7 +51,10 @@ require "about.pl";
                           "New email address added.",
   "2.02 (18 Oct 2004)" => "Separated out the 'about' page generation, for use with both drafts and RFCs.\n" .
                           "Separated out the 'groups' generalisation, for use with both drafts and RFCs.\n" .
-                          "Updated Abstract RFC identification to be a little more clever."
+                          "Updated Abstract RFC identification to be a little more clever.",
+
+  "2.03 (06 Dec 2021)" => "Updated to run on modern systems, with new style RFC index.\n" .
+                          "Abstracts extracted from index XML, not documents.\n",
 );
 
   
@@ -60,7 +71,7 @@ sub create_root
   print TOP <<EOM;
 RFC index
 #Parent StrongHelp:!Menu
-#Table Columns 3
+#Table Columns 4
 EOM
   $num=$lowest;
   while ($num < $highest)

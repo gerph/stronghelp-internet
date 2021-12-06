@@ -1,6 +1,8 @@
 #! /usr/bin/perl
 
 
+require "rfcindex.pl";
+
 # Read all the RFC abstracts into the hash :
 #   $rfc_abstract{<number>}
 
@@ -11,8 +13,8 @@ sub rfcabstracts_read
   
   while ($num < $end)
   {
-    # print STDERR "Processing $num\n";
-    $abstract = &rfcabstract_readfile("rfcs/rfc$num.txt");
+    print STDERR "Processing abstract in: $num\n";
+    $abstract = &rfcabstract_readfile(rfcfile($num));
     if (defined($abstract))
     {
       $rfc_abstract{$num}=$abstract;
