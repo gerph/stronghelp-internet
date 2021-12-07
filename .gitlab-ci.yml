@@ -1,0 +1,40 @@
+# Build the StrongHelp manuals
+#
+
+# Enable submodules
+variables:
+  GIT_STRATEGY: clone
+  GIT_SUBMODULE_STRATEGY: recursive
+
+
+#### Builds ####
+build:
+  # Builds using the cross-compiling toolchain
+  stage: build
+  script:
+
+    # Obtain all the bits that we need to install
+    - |
+      ./install-requirements.sh
+
+    # Download the RFCs (or at least the index)
+    - |
+      ./obtain-rfcs.sh
+
+    # Not building the media types yet - this takes a while to download
+    - |
+      #./obtain-mediatypes.sh
+
+    # Build the manuals
+    - |
+      ./mkmanuals.sh
+
+  artifacts:
+      paths:
+          - Manuals
+      expire_in: 1 day
+
+
+#### Stages to execute ####
+stages:
+  - build

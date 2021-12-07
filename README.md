@@ -20,6 +20,9 @@ These tools are intended to be used on Unix systems (Linux, or macOS). They will
 * `gcc` or equivalent compiler
 * `make`
 * `lftp`
+* `unzip`
+* Perl's File::Slurp
+
 
 To build the manuals, it is necessary to first obtain the resources which will be used.
 This means downloading a lot of data.
@@ -29,9 +32,10 @@ This means downloading a lot of data.
 * Media types: Around 10MB.
 * Internet assignments: (not currently working).
 
-To download this content, run the script to download the content:
+To download this content, run the scripts to download the content:
 
     ./obtain-rfcs.sh
+    ./obtain-mediatypes.sh
 
 This will populate the directories with the sources needed to generate the manuals.
 
