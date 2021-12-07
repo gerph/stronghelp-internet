@@ -117,7 +117,7 @@ sub rfcindex_entry
 
     $file   = rfcfile($num);
     $format = 'TXT';
-    $len    = -s $file // 'unknown';
+    $len    = -s $file;
 
     $status = 'UNKNOWN';
     if ($entry =~ m!<current-status>(.*?)</current-status>!) { $status = $1; }
@@ -156,6 +156,9 @@ sub rfcindex_entry
     $title = "RFC $num";
     if ($entry =~ m!<title>(.*?)</title>!) { $title = $1; }
 
+    $pages = undef;
+    if ($entry =~ m!<page-count>(.*?)</page-count>!) { $pages = 0+$1; }
+
     $abstract = undef;
     if ($entry =~ m!<abstract>(.*?)</abstract>!m)
     {
@@ -167,6 +170,7 @@ sub rfcindex_entry
 
     $rfc_format{$num}    = $format;
     $rfc_length{$num}    = $len;
+    $rfc_pages{$num}     = $pages;
     $rfc_status{$num}    = $status;
     $rfc_obsoletes{$num} = $obsoletes;
     $rfc_obsoleted{$num} = $obsoleted;

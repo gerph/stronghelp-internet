@@ -209,7 +209,14 @@ sub create_abstracts
             print OUT "Author(s):\t${rfc_authors{$num}}\n";
             print OUT "Status:\t${rfc_status{$num}}\n";
             print OUT "Date:\t${rfc_date{$num}}\n";
-            print OUT "Length:\t${rfc_length{$num}}\n";
+            if ($rfc_length{$num})
+            {
+                print OUT "Length:\t${rfc_length{$num}}\n";
+            }
+            if ($rfc_pages{$num})
+            {
+                print OUT "Pages:\t${rfc_pages{$num}}\n";
+            }
 
             if ($rfc_obsoletes{$num} ne "")
             {
