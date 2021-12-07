@@ -7,7 +7,7 @@ used by Internet applications. Specifically there is generation for:
 
 * Index of RFCs.
 * Internet drafts (not currently working).
-* Media types (not currently working).
+* Media types.
 * Internet assignments (not currently working).
 
 ## Prerequisites
@@ -19,13 +19,14 @@ These tools are intended to be used on Unix systems (Linux, or macOS). They will
 * `perl`
 * `gcc` or equivalent compiler
 * `make`
+* `lftp`
 
 To build the manuals, it is necessary to first obtain the resources which will be used.
 This means downloading a lot of data.
 
 * RFCs: Around 500MB.
 * Drafts: (not currently working).
-* Media types: (not currently working).
+* Media types: Around 10MB.
 * Internet assignments: (not currently working).
 
 To download this content, run the script to download the content:

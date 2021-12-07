@@ -4,6 +4,8 @@ $datatype = ",ffd";
 $media = "media-types";
 $sh = "shmedia";
 
+push @INC, '.';
+
 require "about.pl";
 require "shtext.pl";
 
@@ -15,13 +17,14 @@ mkdir $sh, 0755;
   "Description" => "This manual intends to provide a quick reference " .
                    "to the registered MIME Media types. " .
                    "It is not complete, nor (as with anything on the Internet) can it ever be.",
-  "Author" => "Justin Fletcher",
+  "Author" => "Charles Ferguson",
   "Email" => "gerph\@gerph.org",
 
   # Any entry with the form '#.## (## ### ####)' is a history entry
   "0.01 (19 Oct 2004)" => "Initial version, knocked up quickly.",
   "0.02 (20 Oct 2004)" => "Moved to using shtext library for processing of ".
-                          "plain text segments of the media type files."
+                          "plain text segments of the media type files.",
+  "0.03 (06 Dec 2021)" => "Updated to run on modern systems.\n",
 );
 
 # Scan the directories for new media types
