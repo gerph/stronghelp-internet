@@ -25,7 +25,8 @@ These tools are intended to be used on Unix systems (Linux, or macOS). They will
 
 
 To build the manuals, it is necessary to first obtain the resources which will be used.
-This means downloading a lot of data.
+In the large configuration, this means downloading a lot of data - this is turned off by
+default.
 
 * RFCs: Around 500MB.
 * Drafts: (not currently working).
