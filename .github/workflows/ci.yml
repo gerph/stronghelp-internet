@@ -87,7 +87,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Download built binary
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v7
         with:
           name: StrongHelpManuals
 
