@@ -73,7 +73,7 @@ jobs:
           echo "::set-output name=version::$version"
           echo "::set-output name=leafname::$leafname"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: StrongHelpManuals
           path: ${{ steps.version.outputs.leafname }}
